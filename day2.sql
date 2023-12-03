@@ -72,39 +72,34 @@ MODIFIES SQL DATA
 
 END;
 
-drop procedure if exists IterateAndCallProcedure;
-CREATE PROCEDURE IterateAndCallProcedure()
+drop procedure if exists process_all_games;
+CREATE PROCEDURE process_all_games()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
-    DECLARE aParam text;
+    DECLARE data text;
     DECLARE cur CURSOR FOR SELECT data FROM day_02;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
     OPEN cur;
 
     read_loop: LOOP
-        FETCH cur INTO aParam;
+        FETCH cur INTO data;
         IF done THEN
             LEAVE read_loop;
         END IF;
 
-        CALL parse_game(aParam);
+        CALL parse_game(data);
     END LOOP;
 
     CLOSE cur;
 END;
 
-call IterateAndCallProcedure;
-
-select * from day_02_game;
-select * from day_02_round;
-select * from day_02_game_round;
-
+call process_all_games;
 
 SELECT sum(id) as answer_day_02_pt1 from day_02_game where id not in (
     select game_id from day_02_game_round gr inner join day_02_round r on r.id = gr.round_id
                    where green > 13 or red> 12 or blue >14
     );
 
-select sum(powers) from (select max(red) * max(green) * max(blue) as powers from day_02_round inner join day_02_game_round d02gr on day_02_round.id = d02gr.round_id
+select sum(powers) as answer_day_02_pt2 from (select max(red) * max(green) * max(blue) as powers from day_02_round inner join day_02_game_round d02gr on day_02_round.id = d02gr.round_id
 group by game_id) as p;
