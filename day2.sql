@@ -101,7 +101,10 @@ select * from day_02_round;
 select * from day_02_game_round;
 
 
-SELECT sum(id) from day_02_game where id not in (
+SELECT sum(id) as answer_day_02_pt1 from day_02_game where id not in (
     select game_id from day_02_game_round gr inner join day_02_round r on r.id = gr.round_id
                    where green > 13 or red> 12 or blue >14
-    )
+    );
+
+select sum(powers) from (select max(red) * max(green) * max(blue) as powers from day_02_round inner join day_02_game_round d02gr on day_02_round.id = d02gr.round_id
+group by game_id) as p;
