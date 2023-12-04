@@ -64,4 +64,37 @@ call parse_data();
 
 select SUM(score) as day04_answer_1 from( select pow(2,count(id)-1) as score from day_04_card_numbers q
     inner join (select card_nr, nr from day_04_card_numbers where is_card = false) subq on q.card_nr = subq.card_nr and q.nr = subq.nr
- where is_card = true GROUP BY q.card_nr) sq1
+ where is_card = true GROUP BY q.card_nr) sq1;
+
+DROP TABLE IF EXISTS cards;
+CREATE TABLE cards(card_nr int, nr_cards int default 1);
+
+insert into cards (card_nr) select distinct card_nr from day_04_card_numbers;
+
+DROP PROCEDURE IF EXISTS process_pt2;
+CREATE PROCEDURE process_pt2()
+MODIFIES SQL DATA
+BEGIN
+    DECLARE done bool;
+    DECLARE current_card int;
+    DECLARE current_wins int;
+    DECLARE nr_card_var int;
+    DECLARE cur CURSOR FOR
+        select q.card_nr, count(id) as score from day_04_card_numbers q
+            inner join (select card_nr, nr from day_04_card_numbers where is_card = false) subq on q.card_nr = subq.card_nr and q.nr = subq.nr
+        where is_card = true GROUP BY q.card_nr;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    open cur;
+    process_loop: LOOP
+        fetch cur into current_card, current_wins;
+        if done then
+            leave process_loop;
+        end if;
+        select c.nr_cards into nr_card_var from cards c where c.card_nr = current_card LIMIT 1;
+        UPDATE cards c SET c.nr_cards = c.nr_cards + nr_card_var where c.card_nr > current_card and c.card_nr <= current_wins+current_card;
+    END LOOP;
+END;
+call process_pt2();
+
+select sum(nr_cards) from cards;
