@@ -19,13 +19,13 @@ begin
         if done then
             leave read_loop;
         end if;
-        call next_substring( input, 1, row_nr);
+        call iterate_substrings( input, 1, row_nr);
         SET row_nr = row_nr + 1;
     end loop;
 end;
 
-drop procedure if exists next_substring;
-CREATE PROCEDURE next_substring(data text, start_index int, row_nr_arg int)
+drop procedure if exists iterate_substrings;
+CREATE PROCEDURE iterate_substrings(data text, start_index int, row_nr_arg int)
 begin
     declare start int;
     declare end int;
@@ -55,8 +55,9 @@ select sum(s.value) as day_03_answer_1 from day_03_parsed s
         on (abs(s2.row_nr - s.row_nr) <= 1 and s.start-1 <= s2.start and s.end+1 >= s2.end)
         where s.is_numeric = true ;
 
-select sum(substr(vals from 1 for locate(',',vals)-1)* substr(vals, locate(',',vals)+1)) as day_03_answer_2  from(
-select s.*, group_concat(s2.value) as vals  from day_03_parsed s
-    left join (select id, row_nr, start, end, value as value from day_03_parsed where is_numeric = true) s2
-        on (abs(s2.row_nr - s.row_nr) <= 1 and s2.start-1 <= s.start and s2.end+1 >= s.end)
-    where s.value = '*' group by s.id having count(s2.id)=2) as source;
+select sum(substr(vals from 1 for locate(',',vals)-1)* substr(vals, locate(',',vals)+1)) as day_03_answer_2
+from(
+    select s.*, group_concat(s2.value) as vals  from day_03_parsed s
+        left join (select id, row_nr, start, end, value as value from day_03_parsed where is_numeric = true) s2
+            on (abs(s2.row_nr - s.row_nr) <= 1 and s2.start-1 <= s.start and s2.end+1 >= s.end)
+        where s.value = '*' group by s.id having count(s2.id)=2) as source;
