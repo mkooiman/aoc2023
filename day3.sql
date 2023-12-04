@@ -50,12 +50,13 @@ end;
 
 call parse_data();
 
-select s.* from day_03_parsed s
-    inner join (select id, row_nr, start, end, value from day_03_parsed where is_numeric = false) s2
-        on (abs(s2.row_nr - s.row_nr) <= 1 and s.start-1 <= s2.start and s.end+1 >= s2.end)
-        where s.is_numeric = true ;
-
 select sum(s.value) as day_03_answer_1 from day_03_parsed s
     inner join (select id, row_nr, start, end, value from day_03_parsed where is_numeric = false) s2
         on (abs(s2.row_nr - s.row_nr) <= 1 and s.start-1 <= s2.start and s.end+1 >= s2.end)
         where s.is_numeric = true ;
+
+select sum(substr(vals from 1 for locate(',',vals)-1)* substr(vals, locate(',',vals)+1)) as day_03_answer_2  from(
+select s.*, group_concat(s2.value) as vals  from day_03_parsed s
+    left join (select id, row_nr, start, end, value as value from day_03_parsed where is_numeric = true) s2
+        on (abs(s2.row_nr - s.row_nr) <= 1 and s2.start-1 <= s.start and s2.end+1 >= s.end)
+    where s.value = '*' group by s.id having count(s2.id)=2) as source;
