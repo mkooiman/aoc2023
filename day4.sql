@@ -4,7 +4,7 @@ drop table if exists day_04_card_numbers;
 create table day_04_card_numbers(id int auto_increment primary key , card_nr int, nr int, is_card bool);
 
 drop procedure if exists parse_data;
-CREATE PROCEDURE  parse_data()
+CREATE PROCEDURE parse_data()
 BEGIN
     DECLARE done bool;
     DECLARE input text;
@@ -20,6 +20,7 @@ BEGIN
         end if;
         call parse_record(input);
     end loop;
+    close cur;
 end;
 
 DROP PROCEDURE if exists parse_record;
@@ -44,8 +45,8 @@ CREATE PROCEDURE  parse_numbers(data text, card_nr_arg int, is_card_arg bool)
 MODIFIES SQL DATA
 BEGIN
     DECLARE current_number int;
-
     DECLARE current_number_end int;
+
     read_loop: LOOP
         SET current_number_end = regexp_instr(data,'([0-9]+)',1,1,1);
         if current_number_end = 0 then
@@ -94,6 +95,7 @@ BEGIN
         select c.nr_cards into nr_card_var from cards c where c.card_nr = current_card LIMIT 1;
         UPDATE cards c SET c.nr_cards = c.nr_cards + nr_card_var where c.card_nr > current_card and c.card_nr <= current_wins+current_card;
     END LOOP;
+    close cur;
 END;
 call process_pt2();
 
