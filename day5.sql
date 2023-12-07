@@ -83,7 +83,7 @@ end;
 
 
 call parse_data();
-select * from mappings;
+
 drop table if exists sln_01;
 create temporary table sln_01 (seed_nr bigint, soil_nr bigint default -1, fertilizer_nr bigint default -1, water_nr bigint default -1, light_nr bigint default -1, temperature_nr bigint default -1, humidity_nr bigint default -1, location bigint default -1);
 
@@ -124,6 +124,7 @@ update sln_01 s inner join mappings sts on sts.start_source <= s.humidity_nr and
 
 update sln_01 set location = humidity_nr where location=-1;
 
+select min(location) as answer1 from sln_01;
 
 drop table if exists sln_02;
 create temporary table sln_02(range_start bigint, length bigint, level int);
